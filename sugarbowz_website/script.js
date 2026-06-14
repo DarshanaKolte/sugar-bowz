@@ -58,10 +58,18 @@ const navToggle = document.querySelector(".nav-toggle");
 const navLinks = document.querySelector(".nav-links");
 const header = document.querySelector(".site-header");
 const cursorGlow = document.querySelector(".cursor-glow");
-const loader = document.getElementById("loader");
 const year = document.getElementById("year");
 
+function removeLoader() {
+  const loader = document.getElementById("loader");
+  if (loader) {
+    loader.remove();
+  }
+}
+
 function render(items = menu) {
+  if (!grid) return;
+
   grid.innerHTML = items
     .map((item) => {
       const originalIndex = menu.findIndex((m) => m.name === item.name);
@@ -92,38 +100,52 @@ function render(items = menu) {
 function addToCart(index) {
   cart.push(menu[index]);
   updateCart();
-  cartPanel.classList.add("open");
+
+  if (cartPanel) {
+    cartPanel.classList.add("open");
+  }
 }
 
 function updateCart() {
-  cartCount.textContent = cart.length;
-
-  if (cart.length === 0) {
-    cartItems.innerHTML = "<p>Your cart is empty.</p>";
-  } else {
-    cartItems.innerHTML = cart
-      .map(
-        (item) => `
-          <div class="cart-item">
-            <strong>${item.name}</strong><br>
-            <span>${item.price}</span>
-          </div>
-        `
-      )
-      .join("");
+  if (cartCount) {
+    cartCount.textContent = cart.length;
   }
 
-  const text =
-    cart.length > 0
-      ? "Hi SugarBowz, I want to order: " + cart.map((item) => item.name).join(", ")
-      : "Hi SugarBowz, I want to place an order.";
+  if (cartItems) {
+    if (cart.length === 0) {
+      cartItems.innerHTML = "<p>Your cart is empty.</p>";
+    } else {
+      cartItems.innerHTML = cart
+        .map(
+          (item) => `
+            <div class="cart-item">
+              <strong>${item.name}</strong><br>
+              <span>${item.price}</span>
+            </div>
+          `
+        )
+        .join("");
+    }
+  }
 
-  sendOrder.href = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+  if (sendOrder) {
+    const text =
+      cart.length > 0
+        ? "Hi SugarBowz, I want to order: " + cart.map((item) => item.name).join(", ")
+        : "Hi SugarBowz, I want to place an order.";
+
+    sendOrder.href = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+  }
 }
 
 document.querySelectorAll(".filter").forEach((button) => {
   button.addEventListener("click", () => {
-    document.querySelector(".filter.active").classList.remove("active");
+    const activeFilter = document.querySelector(".filter.active");
+
+    if (activeFilter) {
+      activeFilter.classList.remove("active");
+    }
+
     button.classList.add("active");
 
     const filter = button.dataset.filter;
@@ -131,36 +153,50 @@ document.querySelectorAll(".filter").forEach((button) => {
   });
 });
 
-navToggle.addEventListener("click", () => {
-  navLinks.classList.toggle("open");
-});
+if (navToggle && navLinks) {
+  navToggle.addEventListener("click", () => {
+    navLinks.classList.toggle("open");
+  });
+}
 
-cartBtn.addEventListener("click", () => {
-  cartPanel.classList.add("open");
-});
+if (cartBtn && cartPanel) {
+  cartBtn.addEventListener("click", () => {
+    cartPanel.classList.add("open");
+  });
+}
 
-closeCart.addEventListener("click", () => {
-  cartPanel.classList.remove("open");
-});
+if (closeCart && cartPanel) {
+  closeCart.addEventListener("click", () => {
+    cartPanel.classList.remove("open");
+  });
+}
 
 window.addEventListener("scroll", () => {
-  header.classList.toggle("scrolled", window.scrollY > 40);
+  if (header) {
+    header.classList.toggle("scrolled", window.scrollY > 40);
+  }
 });
 
-const observer = new IntersectionObserver(
-  (entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("show");
-      }
-    });
-  },
-  { threshold: 0.14 }
-);
+if ("IntersectionObserver" in window) {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("show");
+        }
+      });
+    },
+    { threshold: 0.14 }
+  );
 
-document.querySelectorAll(".reveal").forEach((element) => {
-  observer.observe(element);
-});
+  document.querySelectorAll(".reveal").forEach((element) => {
+    observer.observe(element);
+  });
+} else {
+  document.querySelectorAll(".reveal").forEach((element) => {
+    element.classList.add("show");
+  });
+}
 
 document.addEventListener("mousemove", (event) => {
   if (cursorGlow) {
@@ -169,13 +205,10 @@ document.addEventListener("mousemove", (event) => {
   }
 });
 
-window.addEventListener("load", () => {
-  setTimeout(() => {
-    loader.classList.add("hide");
-  }, 700);
-});
-
-year.textContent = new Date().getFullYear();
+if (year) {
+  year.textContent = new Date().getFullYear();
+}
 
 render();
 updateCart();
+removeLoader();
