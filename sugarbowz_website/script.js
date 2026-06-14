@@ -1,21 +1,181 @@
-const phone='919876543210';
-const menu=[
- {name:'Signature Celebration Cake',cat:'cakes',price:'Custom price',desc:'Elegant eggless cakes for birthdays, anniversaries and milestones.',icon:'Cake'},
- {name:'Chocolate Truffle Cake',cat:'cakes',price:'From ₹899',desc:'Rich chocolate layers with smooth premium finish.',icon:'Truffle'},
- {name:'Customized Logo Cookies',cat:'gifting',price:'From ₹60/pc',desc:'Perfect for corporate gifting, events and party favours.',icon:'Cookies'},
- {name:'Brownie Box',cat:'desserts',price:'From ₹499',desc:'Fudgy brownies packed beautifully for gifting and cravings.',icon:'Brownies'},
- {name:'Dessert Jars',cat:'desserts',price:'From ₹149',desc:'Layered eggless dessert jars in crowd-favourite flavours.',icon:'Jars'},
- {name:'Luxury Hamper',cat:'gifting',price:'Custom price',desc:'Curated festive and corporate hampers with premium packaging.',icon:'Hamper'}
+const phone = "919876543210";
+
+const menu = [
+  {
+    name: "Signature Celebration Cake",
+    cat: "cakes",
+    price: "Custom price",
+    desc: "Elegant eggless cakes for birthdays, anniversaries and milestones.",
+    icon: "Cake"
+  },
+  {
+    name: "Chocolate Truffle Cake",
+    cat: "cakes",
+    price: "From ₹899",
+    desc: "Rich chocolate layers with smooth premium finish.",
+    icon: "Truffle"
+  },
+  {
+    name: "Customized Logo Cookies",
+    cat: "gifting",
+    price: "From ₹60/pc",
+    desc: "Perfect for corporate gifting, events and party favours.",
+    icon: "Cookies"
+  },
+  {
+    name: "Brownie Box",
+    cat: "desserts",
+    price: "From ₹499",
+    desc: "Fudgy brownies packed beautifully for gifting and cravings.",
+    icon: "Brownies"
+  },
+  {
+    name: "Dessert Jars",
+    cat: "desserts",
+    price: "From ₹149",
+    desc: "Layered eggless dessert jars in crowd-favourite flavours.",
+    icon: "Jars"
+  },
+  {
+    name: "Luxury Hamper",
+    cat: "gifting",
+    price: "Custom price",
+    desc: "Curated festive and corporate hampers with premium packaging.",
+    icon: "Hamper"
+  }
 ];
-let cart=[];
-const grid=document.getElementById('menuGrid'), cartCount=document.getElementById('cartCount'), cartItems=document.getElementById('cartItems'), sendOrder=document.getElementById('sendOrder');
-function render(items=menu){grid.innerHTML=items.map((i,idx)=>`<article class="product-card reveal show"><div class="product-img">${i.icon}</div><div class="product-info"><h3>${i.name}</h3><p>${i.desc}</p><div class="product-bottom"><span class="price">${i.price}</span><button class="add" onclick="addToCart(${idx})">Add to order</button></div></div></article>`).join('')}
-function addToCart(idx){cart.push(menu[idx]);updateCart();document.getElementById('cartPanel').classList.add('open')}
-function updateCart(){cartCount.textContent=cart.length;cartItems.innerHTML=cart.length?cart.map(i=>`<div class="cart-item"><strong>${i.name}</strong><br><span>${i.price}</span></div>`).join(''):'<p>Your cart is empty.</p>';let text='Hi SugarBowz, I want to order: '+cart.map(i=>i.name).join(', ');sendOrder.href=`https://wa.me/${phone}?text=${encodeURIComponent(text)}`}
-document.querySelectorAll('.filter').forEach(btn=>btn.addEventListener('click',()=>{document.querySelector('.filter.active').classList.remove('active');btn.classList.add('active');let f=btn.dataset.filter;render(f==='all'?menu:menu.filter(i=>i.cat===f))}));
-document.querySelector('.nav-toggle').onclick=()=>document.querySelector('.nav-links').classList.toggle('open');
-document.getElementById('cartBtn').onclick=()=>document.getElementById('cartPanel').classList.add('open');document.getElementById('closeCart').onclick=()=>document.getElementById('cartPanel').classList.remove('open');
-window.addEventListener('scroll',()=>document.querySelector('.site-header').classList.toggle('scrolled',scrollY>40));
-const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('show')}),{threshold:.14});document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
-document.addEventListener('mousemove',e=>{document.querySelector('.cursor-glow').style.left=e.clientX+'px';document.querySelector('.cursor-glow').style.top=e.clientY+'px'});
-window.addEventListener('load',()=>{setTimeout(()=>document.getElementById('loader').classList.add('hide'),700)});document.getElementById('year').textContent=new Date().getFullYear();render();updateCart();
+
+let cart = [];
+
+const grid = document.getElementById("menuGrid");
+const cartCount = document.getElementById("cartCount");
+const cartItems = document.getElementById("cartItems");
+const sendOrder = document.getElementById("sendOrder");
+const cartPanel = document.getElementById("cartPanel");
+const cartBtn = document.getElementById("cartBtn");
+const closeCart = document.getElementById("closeCart");
+const navToggle = document.querySelector(".nav-toggle");
+const navLinks = document.querySelector(".nav-links");
+const header = document.querySelector(".site-header");
+const cursorGlow = document.querySelector(".cursor-glow");
+const loader = document.getElementById("loader");
+const year = document.getElementById("year");
+
+function render(items = menu) {
+  grid.innerHTML = items
+    .map((item) => {
+      const originalIndex = menu.findIndex((m) => m.name === item.name);
+
+      return `
+        <article class="product-card reveal show">
+          <div class="product-img">${item.icon}</div>
+          <div class="product-info">
+            <h3>${item.name}</h3>
+            <p>${item.desc}</p>
+            <div class="product-bottom">
+              <span class="price">${item.price}</span>
+              <button class="add" data-index="${originalIndex}">Add to order</button>
+            </div>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+
+  document.querySelectorAll(".add").forEach((button) => {
+    button.addEventListener("click", () => {
+      addToCart(Number(button.dataset.index));
+    });
+  });
+}
+
+function addToCart(index) {
+  cart.push(menu[index]);
+  updateCart();
+  cartPanel.classList.add("open");
+}
+
+function updateCart() {
+  cartCount.textContent = cart.length;
+
+  if (cart.length === 0) {
+    cartItems.innerHTML = "<p>Your cart is empty.</p>";
+  } else {
+    cartItems.innerHTML = cart
+      .map(
+        (item) => `
+          <div class="cart-item">
+            <strong>${item.name}</strong><br>
+            <span>${item.price}</span>
+          </div>
+        `
+      )
+      .join("");
+  }
+
+  const text =
+    cart.length > 0
+      ? "Hi SugarBowz, I want to order: " + cart.map((item) => item.name).join(", ")
+      : "Hi SugarBowz, I want to place an order.";
+
+  sendOrder.href = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+}
+
+document.querySelectorAll(".filter").forEach((button) => {
+  button.addEventListener("click", () => {
+    document.querySelector(".filter.active").classList.remove("active");
+    button.classList.add("active");
+
+    const filter = button.dataset.filter;
+    render(filter === "all" ? menu : menu.filter((item) => item.cat === filter));
+  });
+});
+
+navToggle.addEventListener("click", () => {
+  navLinks.classList.toggle("open");
+});
+
+cartBtn.addEventListener("click", () => {
+  cartPanel.classList.add("open");
+});
+
+closeCart.addEventListener("click", () => {
+  cartPanel.classList.remove("open");
+});
+
+window.addEventListener("scroll", () => {
+  header.classList.toggle("scrolled", window.scrollY > 40);
+});
+
+const observer = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("show");
+      }
+    });
+  },
+  { threshold: 0.14 }
+);
+
+document.querySelectorAll(".reveal").forEach((element) => {
+  observer.observe(element);
+});
+
+document.addEventListener("mousemove", (event) => {
+  if (cursorGlow) {
+    cursorGlow.style.left = event.clientX + "px";
+    cursorGlow.style.top = event.clientY + "px";
+  }
+});
+
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    loader.classList.add("hide");
+  }, 700);
+});
+
+year.textContent = new Date().getFullYear();
+
+render();
+updateCart();
